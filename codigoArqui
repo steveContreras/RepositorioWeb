@@ -1,180 +1,172 @@
 from tkinter import *
 from tkinter import messagebox
-import serial, time #importar librerias serial para la comunicacion y time pausar el sistema
-from numpy import *
-import matplotlib.pyplot as plt
+import serial, time  # importar librerias serial para la comunicacion y time pausar el sistema
+#from numpy import *
+#import matplotlib.pyplot as plt
 import threading
 from collections import deque
 
-class Cola:
-    def __init__(self):
-        self.items=[]
+class solicitud:
+    def __init__(self,hora, cantidad):
+        self.hora=hora
+        self.cantidad=cantidad
 
-    def estaVacia(self):
-        return self.items == []
 
-    def agregar(self,item):
-        self.items.append(item)
 
-    def eliminar(self):
-        return self.items.pop(0)
 
-    def tamano(self):
-        return len(self.items)
-
-    def acceder(self):
-        return self.items[self.tamano()-1]
-
-acola = deque([])
-strCantidadSM=""
-strCantidadSA=""
-strCantidadPro=""
-cantidadProducto = 10 #cantidad de productos que hay en la maquina
-cantidadSA=0
-cantidadSM=0
+strCantidadSM = ""
+strCantidadSA = ""
+strCantidadPro = ""
+cantidadProducto = 10  # cantidad de productos que hay en la maquina
+cantidadSA = 0
+cantidadSM = 0
 horaActual = time.strftime("%I:%M")
 # cantidades para la grafica
-cantSA=0 # cantidades automaticas despachadas   
-cantSM=0 # cantidades manuales despachadas
-cantMin=0 # cantidad de minutos desde que se inicio la aplicacion
+cantSA = 0  # cantidades automaticas despachadas
+cantSM = 0  # cantidades manuales despachadas
+cantMin = 0  # cantidad de minutos desde que se inicio la aplicacion
 # arreglos de cantidades en la grafica
-SAGrafica=[]
-tiempoGrafica=[]
-SMGrafica=[]
+SAGrafica = []
+tiempoGrafica = []
+SMGrafica = []
 # insertando puntos iniciales en los arreglos para la grafica
 SAGrafica.append(cantSA)
 SMGrafica.append(cantSM)
 tiempoGrafica.append(cantMin)
-colaSA=Cola()
-colaSM=Cola()
-colaHora=Cola()
-contadorHoras=0
+colaSA = deque([])
+colaSM = deque([])
+contadorS=0
 
 
-def actualizarLCD():
+def actualizarLCD(cantidad):
     global strCantidadSM
     global strCantidadSA
     global strCantidadPro
+    global horaActual
     horaActual = time.strftime("%I:%M")
-    #arduino = serial.Serial("COM4", 9600) #abrir el puerto
-    #time.sleep(2)  # retardo para que de tiempo a abrir el puerto
+    # arduino = serial.Serial("COM4", 9600) #abrir el puerto
+    # time.sleep(2)  # retardo para que de tiempo a abrir el puerto
     if cantidadSM < 10:
         strCantidadSM = "0" + str(cantidadSM)
     else:
         strCantidadSM = str(cantidadSM)
-    
+
     if cantidadSA < 10:
         strCantidadSA = "0" + str(cantidadSA)
     else:
         strCantidadSA = str(cantidadSA)
-        
+
     if cantidadProducto < 10:
         strCantidadPro = "0" + str(cantidadProducto)
     else:
         strCantidadPro = str(cantidadProducto)
-   # arduino.write(bytes(strCantidadPro+","+strCantidadSM+","+strCantidadSA+","+horaActual, encoding="ascii"))
-    #arduino.close()#cerrar el puerto
-
+        # arduino.write(bytes(strCantidadPro+","+strCantidadSM+","+strCantidadSA+","+horaActual+","+str(cantidad), encoding="ascii"))
+        # arduino.close()#cerrar el puerto
 
 
 def graficar():
-    global contadorHoras
-    #colaSM.agregar(3)
-    #colaHora.agregar("04:45")
-    #colaSM.agregar(2)
-    #colaHora.agregar("04:46")
-    #colaSM.agregar(5)
-    #colaHora.agregar("04:47")
-    acola.append("05:17")
-    contadorHoras +=1
-    acola.append("05:18")
-    contadorHoras +=1
-    acola.append("05:19")
-    contadorHoras +=1
-    #print("acceder "+colaHora.acceder())
-    #print(colaSM.tamano())
-    actualizarLCD()
-    global cantSA
-    global cantSM
-    global cantMin
-    cantSA = cantSA+1
-    cantSM = cantSM+3
-    cantMin = cantMin+1 
-    SAGrafica.append(cantSA)
-    SMGrafica.append(cantSM)
-    tiempoGrafica.append(cantMin)     
-    plt.plot(tiempoGrafica, SAGrafica, "ro-")
-    plt.text(tiempoGrafica[len(tiempoGrafica)-1], SAGrafica[len(SAGrafica)-1]+1, r'solicitudes automaticas')
-    plt.plot(tiempoGrafica, SMGrafica,"bo-")
-    plt.text(tiempoGrafica[len(tiempoGrafica)-1], SMGrafica[len(SMGrafica)-1]+1, r'solicitudes manuales')
-    plt.axis([0, 15, 0, 30])
-    plt.xlabel('Tiempo')
-    plt.ylabel('Cantidad de solicitudes')
-    plt.show()
+    #global contadorHoras
+    actualizarLCD(0)
+    #global cantSA
+    #global cantSM
+    #global cantMin
+    #cantSA = cantSA + 1
+    #cantSM = cantSM + 3
+    #cantMin = cantMin + 1
+    #SAGrafica.append(cantSA)
+    #SMGrafica.append(cantSM)
+    #tiempoGrafica.append(cantMin)
+    #plt.plot(tiempoGrafica, SAGrafica, "ro-")
+    #plt.text(tiempoGrafica[len(tiempoGrafica) - 1], SAGrafica[len(SAGrafica) - 1] + 1, r'solicitudes automaticas')
+    #plt.plot(tiempoGrafica, SMGrafica, "bo-")
+    #plt.text(tiempoGrafica[len(tiempoGrafica) - 1], SMGrafica[len(SMGrafica) - 1] + 1, r'solicitudes manuales')
+    #plt.axis([0, 15, 0, 30])
+    #plt.xlabel('Tiempo')
+    #plt.ylabel('Cantidad de solicitudes')
+    #plt.show()
+
 
 def contar():
     global contadorHoras
+    global contadorS
     print("inicio hilo")
     while True:
-        if contadorHoras > 0: 
-            if acola[0] == time.strftime("%I:%M"):
+        if contadorS > 0:
+            if colaSA[0].hora == time.strftime("%I:%M"):
                 messagebox.showinfo(title="prueba", message="Se encontro en cola automatica ")
-                print("se eliminara "+acola[0]+" tamaño de cola "+str(contadorHoras))
-                acola.popleft()
-                contadorHoras-=1
+                print("se eliminara " + colaSA[0].hora + " tamaño de cola " + str(contadorS))
+                actualizarLCD(colaSA[0].cantidad)
+                colaSA.popleft()
+                contadorS -= 1
+            if colaSM[0].hora == time.strftime("%I:%M"):
+                messagebox.showinfo(title="prueba", message="Se encontro en cola automatica ")
+                print("se eliminara " + colaSM[0].hora + " tamaño de cola " + str(contadorS))
+                actualizarLCD(colaSM[0].cantidad)
+                colaSM.popleft()
+                contadorS -= 1
+
 
 hilo1 = threading.Thread(target=contar)
 
 
 def soliManual():
-    colaSM.agregar(varCantidad.get())
+    nuevo = solicitud(time.strftime("%I:%M"),varCantidad.get())
+    colaSM.append(nuevo)
     global cantidadSM
     global strCantidadSM
-    cantidadSM +=1
-    actualizarLCD()
-    messagebox.showinfo(title="prueba", message="Prueba de solicitud manual " +strCantidadSM)
+    global contadorS
+    contadorS+=1
+    cantidadSM += 1
+    actualizarLCD(0)
+    messagebox.showinfo(title="prueba", message="Prueba de solicitud manual " + strCantidadSM)
+
 
 def soliAuto():
-    colaSA.agregar(varCantidad.get())
+    nuevo = solicitud(varHora.get(),varCantidad.get())
+    colaSA.append(nuevo)
     global cantidadSA
     global strCantidadSA
+    global contadorS
+    contadorS += 1
     cantidadSA += 1
-    actualizarLCD()
-    messagebox.showinfo(title="prueba", message="Prueba de solicitud Automatica "+strCantidadSA)
+    actualizarLCD(0)
+    messagebox.showinfo(title="prueba", message="Prueba de solicitud Automatica " + strCantidadSA)
+
 
 def actualizar():
-    messagebox.showinfo(title="prueba", message="Prueba de actualización "+varTotal.get())
-    cantidadProducto=int(varTotal.get())
-    actualizarLCD()
+    global cantidadProducto
+    messagebox.showinfo(title="prueba", message="Prueba de actualización " + varTotal.get())
+    cantidadProducto = int(varTotal.get())
+    actualizarLCD(0)
     hilo1.start()
 
 
-#Ventana-----------------------------------------------------
+# Ventana-----------------------------------------------------
 ventana = Tk()
 ventana.geometry("600x300")
 ventana.title("Practica 3 - Arduino - Arqui 1 - Grupo 14")
-ventana.resizable(False,False)
+ventana.resizable(False, False)
 
-#StringVar que contienen el texto en los Entry/textbox
+# StringVar que contienen el texto en los Entry/textbox
 varCantidad = StringVar()
 varHora = StringVar()
 varTotal = StringVar()
 
-#ATRIBUTOS DE LA VENTANA
+# ATRIBUTOS DE LA VENTANA
 lblCantidad = Label(text="Cantidad de caramelos:").place(x=30, y=50)
-lblHora= Label(text="Hora para Despacho:").place(x=30,y=100)
-lblTotal = Label(text="Actualiar Unidades:").place(x=30,y=200)
+lblHora = Label(text="Hora para Despacho:").place(x=30, y=100)
+lblTotal = Label(text="Actualiar Unidades:").place(x=30, y=200)
 txtCantidad = Entry(textvariable=varCantidad).place(x=170, y=50)
-txtHora = Entry(textvariable=varHora).place(x=170,y=100)
+txtHora = Entry(textvariable=varHora).place(x=170, y=100)
 txtTotal = Entry(textvariable=varTotal).place(x=170, y=200)
-btnSm = Button(text="Realizar Solicitud Manual (SM)", width=27 ,command=soliManual).place(x=350, y=50)
+btnSm = Button(text="Realizar Solicitud Manual (SM)", width=27, command=soliManual).place(x=350, y=50)
 btnSa = Button(text="Realizar Solicitud Automática (SA)", width=27, command=soliAuto).place(x=350, y=100)
 btnGraficar = Button(text="Graficar", width=27, command=graficar).place(x=350, y=150)
 btnActualizar = Button(text="Actualizar Stock", width=27, command=actualizar).place(x=350, y=200)
 
-#QUE CORRA LA VENTANA
+# QUE CORRA LA VENTANA
 ventana.mainloop()
-#arduino = serial.Serial("COM4", 9600)
-#time.sleep(2)
-#arduino.write(b'9')
-#arduino.close()
+# arduino = serial.Serial("COM4", 9600)
+# time.sleep(2)
+# arduino.write(b'9')
+# arduino.close()
